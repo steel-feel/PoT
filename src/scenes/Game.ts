@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { createHeroAnims } from '../anims/heroAnims'
+import { sceneEvents } from '../events/EventCenter'
 
 export default class Game extends Phaser.Scene {
 
@@ -138,6 +139,8 @@ export default class Game extends Phaser.Scene {
                         onComplete: ( (ball:any) => { ball.destroy(); }).bind(this, ball)
                     });
 
+                   
+                    sceneEvents.emit('coin-collected', ball.x, ball.y )
 
 
                 }
