@@ -6,9 +6,17 @@ export default class Game extends Phaser.Scene {
 
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
     private hero!: Phaser.Physics.Matter.Sprite
+    private mainCamera!: Phaser.Cameras.Scene2D.Camera
+
+    private lastLocation: { x: number, y: number }
+
+    private map !: Phaser.Tilemaps.Tilemap
+    private floorLayer!: Phaser.Tilemaps.TilemapLayer | null
 
     constructor() {
         super('game')
+        this.lastLocation = { x: 0, y: 0 }
+
     }
 
     preload() {
@@ -22,12 +30,15 @@ export default class Game extends Phaser.Scene {
             return
         }
 
+        const playerTilePos = this.isoToTilePos(this.hero.x, this.hero.y);
+
         const SPEED = 5
 
         switch (true) {
 
             case this.cursors.left?.isDown:
                 this.hero.setVelocity(-SPEED, 0)
+                // this.hero.thrustRight(0.1)
                 this.hero.anims.play('walk-left', true);
                 break;
             case this.cursors.right?.isDown:
@@ -52,13 +63,16 @@ export default class Game extends Phaser.Scene {
 
         }
 
+        if (this.lastLocation.x != playerTilePos.x || this.lastLocation.y != playerTilePos.y) {
+            console.debug({playerTilePos});
+            this.lastLocation = playerTilePos
+        }
+
     }
 
-    getRootBody (body:any)
-    {
+    getRootBody(body: any) {
         if (body.parent === body) { return body; }
-        while (body.parent !== body)
-        {
+        while (body.parent !== body) {
             body = body.parent;
         }
         return body;
@@ -68,18 +82,20 @@ export default class Game extends Phaser.Scene {
         this.scene.run('game-ui')
         const map = this.make.tilemap({ key: "map" })
 
+        this.map = map
+
         const walls = map.addTilesetImage('walls', 'walls')
         const floors = map.addTilesetImage('floors', 'floors') ?? null
 
-        const floorLayer = map.createLayer("floors", floors || "")
+        this.floorLayer = map.createLayer("floors", floors || "")
         const wallLayer = map.createLayer("walls", walls || "")
 
         wallLayer?.setCollisionByProperty({ collide: true })
 
         wallLayer?.setCullPadding(4, 4)
-        floorLayer?.setCullPadding(4, 4)
+        this.floorLayer?.setCullPadding(4, 4)
 
-        if (!wallLayer || !floorLayer)
+        if (!wallLayer || !this.floorLayer)
             return
 
         this.matter.world.convertTilemapLayer(wallLayer, {})
@@ -96,7 +112,10 @@ export default class Game extends Phaser.Scene {
         this.hero.setFixedRotation()
         this.hero.setDepth(4)
 
-        this.cameras.main.startFollow(this.hero, true)
+        // this.hero.setFrictionAir(0.05);
+        // this.hero.setMass(30);
+
+        this.mainCamera = this.cameras.main.startFollow(this.hero, true)
         this.cameras.main.setZoom(0.7, 0.7)
 
 
@@ -109,46 +128,78 @@ export default class Game extends Phaser.Scene {
         chest.setFixedRotation()
         chest.setStatic(true)
 
-        this.matter.world.on('collisionstart',  (event: any ) => {
-            for (let i = 0; i < event.pairs.length; i++)
-            {
-                // The tile bodies in this example are a mixture of compound bodies and simple rectangle
-                // bodies. The "label" property was set on the parent body, so we will first make sure
-                // that we have the top level body instead of a part of a larger compound body.
-                const bodyA = this.getRootBody(event.pairs[i].bodyA);
-                const bodyB = this.getRootBody(event.pairs[i].bodyB);
+        this.matter.world.on('collisionstart', this.handleCollision, this)
 
-                if ( bodyA.label === 'chest' || bodyB.label === 'chest' )
-                {
-                    const ballBody = bodyA.label === 'chest' ? bodyA : bodyB;
-                    const ball = ballBody.gameObject;
-
-                    // A body may collide with multiple other bodies in a step, so we'll use a flag to
-                    // only tween & destroy the ball once.
-                    if (ball.isBeingDestroyed)
-                    {
-                        continue;
-                    }
-                    ball.isBeingDestroyed = true;
-
-                    this.matter.world.remove(ballBody);
-
-                    this.tweens.add({
-                        targets: ball,
-                        alpha: { value: 0, duration: 1000, ease: 'Power1' },
-                        onComplete: ( (ball:any) => { ball.destroy(); }).bind(this, ball)
-                    });
-
-                   
-                    sceneEvents.emit('coin-collected', ball.x, ball.y )
-
-
-                }
-            }
-
-        }
-        ,this)
-       
     }
 
+    handleCollision(event: any) {
+        for (let i = 0; i < event.pairs.length; i++) {
+            // The tile bodies in this example are a mixture of compound bodies and simple rectangle
+            // bodies. The "label" property was set on the parent body, so we will first make sure
+            // that we have the top level body instead of a part of a larger compound body.
+            const bodyA = this.getRootBody(event.pairs[i].bodyA);
+            const bodyB = this.getRootBody(event.pairs[i].bodyB);
+
+            if (bodyA.label === 'chest' || bodyB.label === 'chest') {
+                const ballBody = bodyA.label === 'chest' ? bodyA : bodyB;
+                const ball = ballBody.gameObject;
+
+                // A body may collide with multiple other bodies in a step, so we'll use a flag to
+                // only tween & destroy the ball once.
+                if (ball.isBeingDestroyed) {
+                    continue;
+                }
+                ball.isBeingDestroyed = true;
+
+                this.matter.world.remove(ballBody);
+
+                this.tweens.add({
+                    targets: ball,
+                    alpha: { value: 0, duration: 1000, ease: 'Power1' },
+                    onComplete: ((ball: any) => { ball.destroy(); }).bind(this, ball)
+                });
+
+
+                sceneEvents.emit('coin-collected', ball.x, ball.y)
+                this.playerTileIndexing(ball.x, ball.y)
+            }
+        }
+
+    }
+
+
+    screenToTileCoordinates(x: number, y: number) {
+        // Convert screen coordinates to world coordinates
+        let worldX = x - this.scale.width / 2 + this.mainCamera.scrollX;
+        let worldY = y - this.mainCamera.scrollY;
+
+        const tileHeight = 128, tileWidth = 256;
+
+        // Convert world coordinates to tile coordinates
+        let tileX = Math.floor((worldY / tileHeight) + (worldX / tileWidth)) - this.map.widthInPixels / (2 * tileWidth);
+        let tileY = Math.floor((worldY / tileHeight) - (worldX / tileWidth)) + this.map.heightInPixels / (2 * tileHeight);
+
+        return { x: tileX, y: tileY };
+    }
+
+    isoToTilePos(isoX:number, isoY:number) {
+        const tileWidthHalf = 256 / 2;
+        const tileHeightHalf = 128 / 2;
+    
+        const tileX = Math.floor(isoX / tileWidthHalf + isoY / tileHeightHalf) - 1;
+        const tileY = Math.floor(-isoX / tileWidthHalf + isoY / tileHeightHalf);
+    
+        return { x: tileX, y: tileY };
+    }
+
+    playerTileIndexing(x: number, y: number) {
+        const playerTilePos = this.isoToTilePos(x, y);
+
+        const tile = this.floorLayer?.getIsoTileAtWorldXY(x, y)
+        // Get the tile at player's position from layer data
+        // const tile = this.floorLayer?.getTileAt(playerTilePos.x, playerTilePos.y);
+
+        console.debug({ tile, playerTilePos })
+
+    }
 }
