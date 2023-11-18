@@ -1,0 +1,23 @@
+import Phaser from 'phaser'
+
+export default class Preloader extends Phaser.Scene {
+    constructor() {
+        super('preloader')
+    }
+
+    preload() {
+        this.load.image('walls', 'tiles/walls/walls.png');
+        this.load.image('floors', 'tiles/floors/floors.png');
+
+        this.load.tilemapTiledJSON('map', 'tiles/t_map.json');
+
+        this.load.spritesheet('hero', 'hero/hero.png', {
+            frameWidth: 148,
+            frameHeight: 144,
+        });  
+
+    }
+    create() {
+        this.scene.start('game')
+    }
+}
