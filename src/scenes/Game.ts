@@ -53,6 +53,16 @@ export default class Game extends Phaser.Scene {
 
     }
 
+    getRootBody (body:any)
+    {
+        if (body.parent === body) { return body; }
+        while (body.parent !== body)
+        {
+            body = body.parent;
+        }
+        return body;
+    }
+
     create() {
         this.scene.run('game-ui')
         const map = this.make.tilemap({ key: "map" })
@@ -74,11 +84,12 @@ export default class Game extends Phaser.Scene {
         this.matter.world.convertTilemapLayer(wallLayer, {})
 
         createHeroAnims(this.anims)
+
         this.hero = this.matter.add.sprite(2000, 2000, "hero")
 
         this.hero.setBody({
-            height: this.hero.height * 0.7,
-            width: this.hero.width * 0.7,
+            height: this.hero.height * 0.3,
+            width: this.hero.width * 0.3,
         })
 
         this.hero.setFixedRotation()
@@ -87,6 +98,54 @@ export default class Game extends Phaser.Scene {
         this.cameras.main.startFollow(this.hero, true)
         this.cameras.main.setZoom(0.7, 0.7)
 
+
+        //Add treasure chests
+        const chest = this.matter.add.image(2000, 3000, 'chest', undefined, { restitution: 1, label: 'chest' });
+        // chest.setBody({
+        //     height: chest.height * 0.8,
+        //     width: chest.width * 0.8,
+        // })
+        chest.setFixedRotation()
+        chest.setStatic(true)
+
+        this.matter.world.on('collisionstart',  (event: any ) => {
+            for (let i = 0; i < event.pairs.length; i++)
+            {
+                // The tile bodies in this example are a mixture of compound bodies and simple rectangle
+                // bodies. The "label" property was set on the parent body, so we will first make sure
+                // that we have the top level body instead of a part of a larger compound body.
+                const bodyA = this.getRootBody(event.pairs[i].bodyA);
+                const bodyB = this.getRootBody(event.pairs[i].bodyB);
+
+                if ( bodyA.label === 'chest' || bodyB.label === 'chest' )
+                {
+                    const ballBody = bodyA.label === 'chest' ? bodyA : bodyB;
+                    const ball = ballBody.gameObject;
+
+                    // A body may collide with multiple other bodies in a step, so we'll use a flag to
+                    // only tween & destroy the ball once.
+                    if (ball.isBeingDestroyed)
+                    {
+                        continue;
+                    }
+                    ball.isBeingDestroyed = true;
+
+                    this.matter.world.remove(ballBody);
+
+                    this.tweens.add({
+                        targets: ball,
+                        alpha: { value: 0, duration: 1000, ease: 'Power1' },
+                        onComplete: ( (ball:any) => { ball.destroy(); }).bind(this, ball)
+                    });
+
+
+
+                }
+            }
+
+        }
+        ,this)
+       
     }
 
 }
