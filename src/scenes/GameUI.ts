@@ -26,6 +26,7 @@ export default class GameUI extends Phaser.Scene {
     handleCoinCollection(x: number, y: number) {
         console.debug(`COIN x: ${x} , y : ${y}`)
         this.score++;
+        this.sound.playAudioSprite('sfx', "ping");
         this.scoreText.setText(`Score: ${this.score}`)
     }
 

@@ -106,14 +106,11 @@ export default class Game extends Phaser.Scene {
 
         this.hero.setBody({
             height: this.hero.height * 0.3,
-            width: this.hero.width * 0.3,
+            width: this.hero.width * 0.3, 
         })
 
         this.hero.setFixedRotation()
         this.hero.setDepth(4)
-
-        // this.hero.setFrictionAir(0.05);
-        // this.hero.setMass(30);
 
         this.mainCamera = this.cameras.main.startFollow(this.hero, true)
         this.cameras.main.setZoom(0.7, 0.7)

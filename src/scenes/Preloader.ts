@@ -18,6 +18,10 @@ export default class Preloader extends Phaser.Scene {
             frameHeight: 144,
         });  
 
+        this.load.audioSprite('sfx', 'misc/fx_mixdown.json', [
+            'misc/fx_mixdown.ogg',
+        ]);
+
     }
     create() {
         this.scene.start('game')
