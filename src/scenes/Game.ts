@@ -70,7 +70,7 @@ export default class Game extends Phaser.Scene {
       }
     }
 
-    const tile = this.floorLayer?.getIsoTileAtWorldXY(this.hero.x, this.hero.y);
+    const tile = this.playerTileIndexing(this.hero.x, this.hero.y);
     if (
       tile &&
       (this.lastLocation.x != tile.x || this.lastLocation.y != tile.y)
@@ -81,36 +81,11 @@ export default class Game extends Phaser.Scene {
       };
 
       console.log("x : ", this.lastLocation.x, "y ", this.lastLocation.y);
-
-      //   hero-moved
+      console.log("PIXEL x : ", this.hero.x, "PIXEL y ", this.hero.y);
 
       this.playerPath.push(Direction);
       sceneEvents.emit("hero-moved", this.playerPath.length);
     }
-  }
-
-  getDirection(
-    oldLoc: { x: number; y: number },
-    newLoc: { x: number; y: number }
-  ): number {
-    /*
-        1 - UP
-        2 - LEFT
-        3-RIGHT
-        4 Down
-        */
-
-    let direction = 0;
-
-    if (oldLoc.x > newLoc.x) {
-    } else {
-    }
-
-    if (oldLoc.y > newLoc.y) {
-    } else {
-    }
-
-    return direction;
   }
 
   getRootBody(body: any) {
@@ -178,11 +153,15 @@ export default class Game extends Phaser.Scene {
       { x: 2000, y: 3000 },
       { x: 2000, y: 3500 },
       { x: 2500, y: 3500 },
-      { x: 2000, y: 4500 },
-      { x: 7000, y: 4000 },
-      { x: 10000, y: 5000 },
-      { x: 10000, y: 2000 },
-      { x: 7000, y: 10000 },
+      { x: 2000, y: 2500 },
+      { x: 2000, y: -2000 },
+      { x: 3000, y: 1500 },
+      { x: 2000, y: 4000 },
+      { x: -1000, y: 2000 },
+      { x: -1500, y: 2000 },
+      { x: -2000, y: 2100 },
+      { x: -2500, y: 1500 },
+      { x: -3000, y: 2000 },
     ];
 
     for (const chestLoc of chectLocs) {
@@ -199,6 +178,28 @@ export default class Game extends Phaser.Scene {
       chest.setFixedRotation();
       chest.setStatic(true);
     }
+
+  }
+
+  pixelCoordsToTileIndexes(x: number, y: number) {
+    const isoTileWidth = 256; // Replace this with your tile width
+    const isoTileHeight = 512; // Replace this with your tile height
+
+    // Calculate the tile row (y-coordinate) based on the y position
+    const tileY = Math.floor(y / isoTileHeight);
+
+    // Calculate the x-coordinate based on the x position and the row (y-coordinate)
+    // Since the isometric grid has a slope, the x-coordinate changes as y increases
+    const tileX = Math.floor(x / isoTileWidth) - tileY;
+
+    return { x: tileX, y: tileY };
+  }
+
+  playerTileIndexing(x: number, y: number) {
+    const tile = this.pixelCoordsToTileIndexes(x, y)
+
+    return tile
+
   }
 
   handleCollision(event: any) {
@@ -239,42 +240,4 @@ export default class Game extends Phaser.Scene {
     }
   }
 
-  screenToTileCoordinates(x: number, y: number) {
-    // Convert screen coordinates to world coordinates
-    let worldX = x - this.scale.width / 2 + this.mainCamera.scrollX;
-    let worldY = y - this.mainCamera.scrollY;
-
-    const tileHeight = 128,
-      tileWidth = 256;
-
-    // Convert world coordinates to tile coordinates
-    let tileX =
-      Math.floor(worldY / tileHeight + worldX / tileWidth) -
-      this.map.widthInPixels / (2 * tileWidth);
-    let tileY =
-      Math.floor(worldY / tileHeight - worldX / tileWidth) +
-      this.map.heightInPixels / (2 * tileHeight);
-
-    return { x: tileX, y: tileY };
-  }
-
-  isoToTilePos(isoX: number, isoY: number) {
-    const tileWidthHalf = 256 / 2;
-    const tileHeightHalf = 128 / 2;
-
-    const tileX = Math.floor(isoX / tileWidthHalf + isoY / tileHeightHalf) - 1;
-    const tileY = Math.floor(-isoX / tileWidthHalf + isoY / tileHeightHalf);
-
-    return { x: tileX, y: tileY };
-  }
-
-  playerTileIndexing(x: number, y: number) {
-    const playerTilePos = this.isoToTilePos(x, y);
-
-    const tile = this.floorLayer?.getIsoTileAtWorldXY(x, y);
-    // Get the tile at player's position from layer data
-    // const tile = this.floorLayer?.getTileAt(playerTilePos.x, playerTilePos.y);
-
-    console.debug({ tile, playerTilePos });
-  }
 }
