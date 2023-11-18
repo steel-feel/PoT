@@ -168,6 +168,9 @@ export default class Game extends Phaser.Scene {
 
                 this.tweens.add({
                     targets: ball,
+                    flipY:true,
+                    x: 0 ,
+                    y: 50,
                     alpha: { value: 0, duration: 1000, ease: 'Power1' },
                     onComplete: ((ball: any) => { ball.destroy(); }).bind(this, ball)
                 });
