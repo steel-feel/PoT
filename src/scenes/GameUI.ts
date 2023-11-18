@@ -20,15 +20,24 @@ export default class GameUI extends Phaser.Scene {
         sceneEvents.once('game-over', this.handleEndGame, this)
 
         // this.scoreText = "Coins"
-        this.scoreText = this.add.text(50, 50, `Score: ${this.score}`, {
+        this.scoreText = this.add.text(20, 50, `Score: ${this.score}`, {
             fontSize: 40,
             color: "black",
         })
 
+        const paddings = 5
         const button = this.add.text(70, 100, 'Music: ON', {
             // fontFamily: 'Roboto',
+            backgroundColor:"grey",
             fontSize: '16px',
-            color: "red",
+            padding: 
+            {
+                left: paddings,
+                right: paddings,
+                top: paddings,
+                bottom: paddings
+            },
+            color: "white",
             align: 'center',
 
         }).setOrigin(0.5);
