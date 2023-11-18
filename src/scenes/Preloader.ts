@@ -22,6 +22,10 @@ export default class Preloader extends Phaser.Scene {
             'misc/fx_mixdown.ogg',
         ]);
 
+        this.load.audio('theme', [
+            'misc/turkish_music.ogg',
+        ]);
+
     }
     create() {
         this.scene.start('game')

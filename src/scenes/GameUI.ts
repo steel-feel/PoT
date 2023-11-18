@@ -5,9 +5,12 @@ export default class GameUI extends Phaser.Scene {
     score: number
     scoreText!: Phaser.GameObjects.Text
 
+    private music: boolean
+
     constructor() {
         super({ key: 'game-ui' })
         this.score = 0
+        this.music = false
 
     }
 
@@ -22,7 +25,37 @@ export default class GameUI extends Phaser.Scene {
             color: "black",
         })
 
-        
+        const button = this.add.text(70, 100, 'Music: ON', {
+            // fontFamily: 'Roboto',
+            fontSize: '16px',
+            color: "red",
+            align: 'center',
+
+        }).setOrigin(0.5);
+        button.setInteractive({ useHandCursor: true });
+
+        const music = this.sound.add('theme', {
+            loop: true
+        });
+
+        button.on('pointerdown', () => {
+            this.music = !this.music;
+
+            button.setText(`Music: ${this.music ? 'OFF' : 'ON'}`)
+            if (this.music) {
+                if (music.isPaused)
+                    music.resume();
+                else
+                    music.play();
+            } else {
+                music.pause()
+            }
+
+        });
+
+
+
+
 
     }
 
