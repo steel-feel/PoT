@@ -19,7 +19,7 @@ export default class Game extends Phaser.Scene {
         super('game')
         this.lastLocation = { x: 0, y: 0 }
         this.playerPath = []
-        this.gameEnded  = false
+        this.gameEnded = false
     }
 
     preload() {
@@ -33,8 +33,8 @@ export default class Game extends Phaser.Scene {
             return
         }
 
-        if(this.playerPath.length > 20) {
-            sceneEvents.emit('game-over')
+        if (this.playerPath.length > 19) {
+            sceneEvents.emit('game-over', this.playerPath)
             this.hero.setVelocity(0)
             this.hero.stop()
             this.gameEnded = true
@@ -42,25 +42,30 @@ export default class Game extends Phaser.Scene {
         }
 
         const SPEED = 8
+        let Direction;
+
 
         switch (true) {
 
             case this.cursors.left?.isDown:
                 this.hero.setVelocity(-SPEED, 0)
-                // this.hero.thrustRight(0.1)
                 this.hero.anims.play('walk-left', true);
+                Direction = 2
                 break;
             case this.cursors.right?.isDown:
                 this.hero.setVelocity(SPEED, 0)
                 this.hero.anims.play('walk-right', true);
+                Direction = 3
                 break;
             case this.cursors.up?.isDown:
                 this.hero.setVelocity(0, -SPEED)
                 this.hero.anims.play('walk-up', true);
+                Direction = 1
                 break;
             case this.cursors.down?.isDown:
                 this.hero.setVelocity(0, SPEED)
                 this.hero.anims.play('walk-down', true);
+                Direction = 4
                 break;
 
             default: {
@@ -72,18 +77,46 @@ export default class Game extends Phaser.Scene {
 
         }
 
-        const tile = this.floorLayer?.getIsoTileAtWorldXY(this.hero.x, this.hero.y) 
-        if (tile && (this.lastLocation.x != tile.x || this.lastLocation.y != tile.y ) ) {
-            
-            this.lastLocation  = {
+        const tile = this.floorLayer?.getIsoTileAtWorldXY(this.hero.x, this.hero.y)
+        if (tile && (this.lastLocation.x != tile.x || this.lastLocation.y != tile.y)) {
+
+            this.lastLocation = {
                 x: tile.x,
                 y: tile.y
             }
 
-            this.playerPath.push(this.lastLocation)
-           
+            console.log("x : ", this.lastLocation.x, "y ", this.lastLocation.y);
+
+            this.playerPath.push(Direction)
+
         }
 
+    }
+
+    getDirection(oldLoc: { x: number, y: number }, newLoc: { x: number, y: number }): number {
+        /*
+        1 - UP
+        2 - LEFT
+        3-RIGHT
+        4 Down
+        */
+
+        let direction = 0
+
+        if (oldLoc.x > newLoc.x) {
+
+        } else {
+
+        }
+
+
+        if (oldLoc.y > newLoc.y) {
+
+        } else {
+
+        }
+
+        return direction;
     }
 
     getRootBody(body: any) {
@@ -122,7 +155,7 @@ export default class Game extends Phaser.Scene {
 
         this.hero.setBody({
             height: this.hero.height * 0.3,
-            width: this.hero.width * 0.3, 
+            width: this.hero.width * 0.3,
         })
 
         this.hero.setFixedRotation()
@@ -168,8 +201,8 @@ export default class Game extends Phaser.Scene {
 
                 this.tweens.add({
                     targets: ball,
-                    flipY:true,
-                    x: 0 ,
+                    flipY: true,
+                    x: 0,
                     y: 50,
                     alpha: { value: 0, duration: 1000, ease: 'Power1' },
                     onComplete: ((ball: any) => { ball.destroy(); }).bind(this, ball)
@@ -198,13 +231,13 @@ export default class Game extends Phaser.Scene {
         return { x: tileX, y: tileY };
     }
 
-    isoToTilePos(isoX:number, isoY:number) {
+    isoToTilePos(isoX: number, isoY: number) {
         const tileWidthHalf = 256 / 2;
         const tileHeightHalf = 128 / 2;
-    
+
         const tileX = Math.floor(isoX / tileWidthHalf + isoY / tileHeightHalf) - 1;
         const tileY = Math.floor(-isoX / tileWidthHalf + isoY / tileHeightHalf);
-    
+
         return { x: tileX, y: tileY };
     }
 

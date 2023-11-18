@@ -75,12 +75,16 @@ export default class GameUI extends Phaser.Scene {
         this.scoreText.setText(`Score: ${this.score}`)
     }
 
-    handleEndGame() {
+    handleEndGame(playerPath:number[]) {
         this.sound.playAudioSprite('sfx', "death");
         this.add.text(200, 200, `Game Over`, {
             fontSize: 100,
             color: "black",
         })
+        //ToDo: @soham call service here, 
+        //player path is your variable
+        console.log({playerPath});
+        
     }
 
 }
