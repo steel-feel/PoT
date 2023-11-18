@@ -14,12 +14,15 @@ export default class GameUI extends Phaser.Scene {
     create() {
 
         sceneEvents.on('coin-collected', this.handleCoinCollection, this)
+        sceneEvents.once('game-over', this.handleEndGame, this)
 
         // this.scoreText = "Coins"
         this.scoreText = this.add.text(50, 50, `Score: ${this.score}`, {
             fontSize: 40,
             color: "black",
         })
+
+        
 
     }
 
@@ -28,6 +31,14 @@ export default class GameUI extends Phaser.Scene {
         this.score++;
         this.sound.playAudioSprite('sfx', "ping");
         this.scoreText.setText(`Score: ${this.score}`)
+    }
+
+    handleEndGame() {
+        this.sound.playAudioSprite('sfx', "death");
+        this.add.text(200, 200, `Game Over`, {
+            fontSize: 100,
+            color: "black",
+        })
     }
 
 }

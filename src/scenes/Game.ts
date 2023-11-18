@@ -8,7 +8,9 @@ export default class Game extends Phaser.Scene {
     private hero!: Phaser.Physics.Matter.Sprite
     private mainCamera!: Phaser.Cameras.Scene2D.Camera
 
+    private gameEnded: boolean
     private lastLocation: { x: number, y: number }
+    private playerPath!: any[]
 
     private map !: Phaser.Tilemaps.Tilemap
     private floorLayer!: Phaser.Tilemaps.TilemapLayer | null
@@ -16,7 +18,8 @@ export default class Game extends Phaser.Scene {
     constructor() {
         super('game')
         this.lastLocation = { x: 0, y: 0 }
-
+        this.playerPath = []
+        this.gameEnded  = false
     }
 
     preload() {
@@ -26,13 +29,19 @@ export default class Game extends Phaser.Scene {
     }
 
     update(): void {
-        if (!this.cursors || !this.hero) {
+        if (!this.cursors || !this.hero || this.gameEnded) {
             return
         }
 
-        const playerTilePos = this.isoToTilePos(this.hero.x, this.hero.y);
+        if(this.playerPath.length > 20) {
+            sceneEvents.emit('game-over')
+            this.hero.setVelocity(0)
+            this.hero.stop()
+            this.gameEnded = true
+            return
+        }
 
-        const SPEED = 5
+        const SPEED = 8
 
         switch (true) {
 
@@ -63,9 +72,16 @@ export default class Game extends Phaser.Scene {
 
         }
 
-        if (this.lastLocation.x != playerTilePos.x || this.lastLocation.y != playerTilePos.y) {
-            console.debug({playerTilePos});
-            this.lastLocation = playerTilePos
+        const tile = this.floorLayer?.getIsoTileAtWorldXY(this.hero.x, this.hero.y) 
+        if (tile && (this.lastLocation.x != tile.x || this.lastLocation.y != tile.y ) ) {
+            
+            this.lastLocation  = {
+                x: tile.x,
+                y: tile.y
+            }
+
+            this.playerPath.push(this.lastLocation)
+           
         }
 
     }
