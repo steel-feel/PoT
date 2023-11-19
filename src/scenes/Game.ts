@@ -6,6 +6,7 @@ export default class Game extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private hero!: Phaser.Physics.Matter.Sprite;
   private mainCamera!: Phaser.Cameras.Scene2D.Camera;
+  private minimap!: Phaser.Cameras.Scene2D.Camera
 
   private gameEnded: boolean;
   private lastLocation: { x: number; y: number };
@@ -134,6 +135,16 @@ export default class Game extends Phaser.Scene {
     this.mainCamera = this.cameras.main.startFollow(this.hero, true);
     this.cameras.main.setZoom(0.7, 0.7);
 
+    //Mini MAP
+
+    //  The miniCam is 400px wide, so can display the whole world at a zoom of 0.2
+    this.minimap = this.cameras.add( 50, 450, 200, 200).setZoom(0.09).setName('mini');
+    this.minimap.setBackgroundColor(0x000000);
+    this.minimap.scrollX = -10000;
+    this.minimap.scrollY = 20;
+
+    this.minimap.startFollow(this.hero, true)
+
     //Add treasure chests
     /*
     const chest = this.matter.add.image(2000, 3000, "chest", undefined, {
@@ -155,13 +166,10 @@ export default class Game extends Phaser.Scene {
       { x: 2500, y: 3500 },
       { x: 2000, y: 2500 },
       { x: 2000, y: -2000 },
-      { x: 3000, y: 1500 },
       { x: 2000, y: 4000 },
       { x: -1000, y: 2000 },
       { x: -1500, y: 2000 },
       { x: -2000, y: 2100 },
-      { x: -2500, y: 1500 },
-      { x: -3000, y: 2000 },
     ];
 
     for (const chestLoc of chectLocs) {
