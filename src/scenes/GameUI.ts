@@ -85,16 +85,31 @@ export default class GameUI extends Phaser.Scene {
   }
 
   async handleEndGame(playerPath: number[]) {
-    this.sound.playAudioSprite("sfx", "death");
-    this.add.text(200, 200, `Game Over`, {
+    // this.sound.playAudioSprite("sfx", "death");
+    this.sound.playAudioSprite("sfx", "numkey", {
+      delay: 1,
+      loop: true,
+    });
+
+    const proof_text = this.add.text(180, 200, `Generating Proof . .`, {
       fontSize: 100,
       color: "black",
     });
+
     //ToDo: @soham call service here,
     let result = await fetch(
       `http://localhost:1234/prove?solution=${playerPath.join("")}`
-    );
+    ).finally(async () => {
+      setTimeout(() => { this.sound.stopByKey("sfx"); proof_text.destroy() }, 5000)
+    });
+
+
+
+
     //player path is your variable
     console.log({ playerPath, result });
+
+
+
   }
 }
