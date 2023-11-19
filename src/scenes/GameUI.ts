@@ -12,7 +12,7 @@ export default class GameUI extends Phaser.Scene {
   constructor() {
     super({ key: "game-ui" });
     this.score = 0;
-    this.remainingSteps = 200;
+    this.remainingSteps = 20;
     this.music = false;
   }
 
@@ -73,7 +73,7 @@ export default class GameUI extends Phaser.Scene {
   }
 
   handleHeroMove(movedSteps: number) {
-    this.remainingSteps = 50 - movedSteps < 0 ? 0 : 200 - movedSteps;
+    this.remainingSteps = 20 - movedSteps < 0 ? 0 : 20 - movedSteps;
     this.remainingStepsText.setText(`Steps Remaining: ${this.remainingSteps}`);
   }
 

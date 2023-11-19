@@ -31,7 +31,7 @@ export default class Game extends Phaser.Scene {
       return;
     }
 
-    if (this.playerPath.length > 200) {
+    if (this.playerPath.length > 20) {
       sceneEvents.emit("game-over", this.playerPath);
       this.hero.setVelocity(0);
       this.hero.stop();
