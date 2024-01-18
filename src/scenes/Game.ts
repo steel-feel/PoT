@@ -1,6 +1,8 @@
 import Phaser from "phaser";
 import { createHeroAnims } from "../anims/heroAnims";
 import { sceneEvents } from "../events/EventCenter";
+import { chectLocs } from "../zk/constants"
+import { zkData } from "../zk/zkData";
 
 export default class Game extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -14,12 +16,14 @@ export default class Game extends Phaser.Scene {
 
   private map!: Phaser.Tilemaps.Tilemap;
   private floorLayer!: Phaser.Tilemaps.TilemapLayer | null;
+  private playerZk : zkData
 
   constructor() {
     super("game");
     this.lastLocation = { x: 0, y: 0 };
     this.playerPath = [];
     this.gameEnded = false;
+    this.playerZk = new zkData();
   }
 
   preload() {
@@ -100,6 +104,9 @@ export default class Game extends Phaser.Scene {
   }
 
   create() {
+
+   
+
     this.scene.run("game-ui");
     const map = this.make.tilemap({ key: "map" });
 
@@ -163,21 +170,6 @@ export default class Game extends Phaser.Scene {
   }
 
   createChests() {
-    const chectLocs = [
-      { x: 2000, y: 3000 },
-      { x: 2000, y: 3500 },
-      { x: 2500, y: 3500 },
-      { x: 2000, y: 2500 },
-      { x: 2000, y: -2000 },
-      { x: 2000, y: 4000 },
-      { x: 1500, y: 3500 },
-      { x: 1000, y: 3500 },
-      { x: 500, y: 3500 },
-      { x: 1000, y: 3000 },
-      { x: -1000, y: 2000 },
-      { x: -1500, y: 2000 },
-      { x: -2000, y: 2100 },
-    ];
 
     for (const chestLoc of chectLocs) {
       const chest = this.matter.add.image(
@@ -185,13 +177,15 @@ export default class Game extends Phaser.Scene {
         chestLoc.y,
         "chest",
         undefined,
-        {
+        {  
           restitution: 1,
           label: "chest",
         }
       );
       chest.setFixedRotation();
       chest.setStatic(true);
+      chest.setData("mKey", chestLoc.key)
+      
     }
   }
 
@@ -226,7 +220,6 @@ export default class Game extends Phaser.Scene {
       if (bodyA.label === "chest" || bodyB.label === "chest") {
         const ballBody = bodyA.label === "chest" ? bodyA : bodyB;
         const ball = ballBody.gameObject;
-
         // A body may collide with multiple other bodies in a step, so we'll use a flag to
         // only tween & destroy the ball once.
         if (ball.isBeingDestroyed) {
@@ -247,6 +240,8 @@ export default class Game extends Phaser.Scene {
           }).bind(this, ball),
         });
 
+        this.playerZk.addChest({x: ball.x,y:ball.y});
+        
         sceneEvents.emit("coin-collected", ball.x, ball.y);
         this.playerTileIndexing(ball.x, ball.y);
       }
