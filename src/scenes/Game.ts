@@ -75,22 +75,6 @@ export default class Game extends Phaser.Scene {
       }
     }
 
-    const tile = this.playerTileIndexing(this.hero.x, this.hero.y);
-    if (
-      tile &&
-      (this.lastLocation.x != tile.x || this.lastLocation.y != tile.y)
-    ) {
-      this.lastLocation = {
-        x: tile.x,
-        y: tile.y,
-      };
-
-      console.log("x : ", this.lastLocation.x, "y ", this.lastLocation.y);
-      console.log("PIXEL x : ", this.hero.x, "PIXEL y ", this.hero.y);
-
-      this.playerPath.push(Direction);
-      sceneEvents.emit("hero-moved", this.playerPath.length);
-    }
   }
 
   getRootBody(body: any) {
@@ -170,7 +154,6 @@ export default class Game extends Phaser.Scene {
   }
 
   createChests() {
-
     for (const chestLoc of chectLocs) {
       const chest = this.matter.add.image(
         chestLoc.x,
@@ -187,26 +170,6 @@ export default class Game extends Phaser.Scene {
       chest.setData("mKey", chestLoc.key)
       
     }
-  }
-
-  pixelCoordsToTileIndexes(x: number, y: number) {
-    const isoTileWidth = 256; // Replace this with your tile width
-    const isoTileHeight = 512; // Replace this with your tile height
-
-    // Calculate the tile row (y-coordinate) based on the y position
-    const tileY = Math.floor(y / isoTileHeight);
-
-    // Calculate the x-coordinate based on the x position and the row (y-coordinate)
-    // Since the isometric grid has a slope, the x-coordinate changes as y increases
-    const tileX = Math.floor(x / isoTileWidth) - tileY;
-
-    return { x: tileX, y: tileY };
-  }
-
-  playerTileIndexing(x: number, y: number) {
-    const tile = this.pixelCoordsToTileIndexes(x, y);
-
-    return tile;
   }
 
   handleCollision(event: any) {
@@ -240,10 +203,10 @@ export default class Game extends Phaser.Scene {
           }).bind(this, ball),
         });
 
+        //add coins to bucket
         this.playerZk.addChest({x: ball.x,y:ball.y});
-        
-        sceneEvents.emit("coin-collected", ball.x, ball.y);
-        this.playerTileIndexing(ball.x, ball.y);
+        sceneEvents.emit("coin-collected");
+             
       }
     }
   }
