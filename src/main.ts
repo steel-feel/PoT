@@ -3,6 +3,7 @@ import Phaser from 'phaser'
 import Game from './scenes/Game'
 import Preloader from './scenes/Preloader'
 import GameUI from './scenes/GameUI'
+import Splash from './scenes/Splash'
 
 // let width = 1200
 // let height = 800
@@ -28,7 +29,7 @@ const config: Phaser.Types.Core.GameConfig = {
 			gravity: {y:0}, 	
 		}
 	},
-	scene: [Preloader,Game,GameUI],
+	scene: [Preloader,Splash,Game,GameUI],
 }
 
 export default new Phaser.Game(config)

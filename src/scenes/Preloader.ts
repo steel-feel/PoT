@@ -10,7 +10,6 @@ export default class Preloader extends Phaser.Scene {
         this.load.image('floors', 'tiles/floors/floors.png');
         this.load.image('chest', 'misc/object.png');
 
-
         this.load.tilemapTiledJSON('map', 'tiles/t_map.json');
 
         this.load.spritesheet('hero', 'hero/hero.png', {
@@ -24,6 +23,10 @@ export default class Preloader extends Phaser.Scene {
 
     }
     create() {
-        this.scene.start('game')
+        this.scene.start('splash')
     }
+
+
+ 
+
 }
