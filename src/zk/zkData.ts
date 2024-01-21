@@ -1,6 +1,6 @@
 interface zkPoint {
     x: number;
-    y:number;
+    y: number;
 }
 
 class zkData {

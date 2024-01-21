@@ -1,11 +1,14 @@
 import Phaser from 'phaser'
+import { Game } from '../zk/contracts'
 
 export default class Preloader extends Phaser.Scene {
     constructor() {
         super('splash')
     }
 
-    create() {
+   async create() {
+
+        await Game.compile(); 
 
         //TODO: button beautification
         const startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Start game')
@@ -27,8 +30,7 @@ export default class Preloader extends Phaser.Scene {
             //@ts-ignore
             await window.mina.requestAccounts();
 
-            this.scene.launch("game")
-            this.scene.launch("game-ui")
+            this.scene.start("game")
         } catch (err) {
             // If the user has a wallet installed but has not created an account, an
             // exception will be thrown. Consider showing "not connected" in your UI.

@@ -11,7 +11,6 @@ export default class Game extends Phaser.Scene {
   private minimap!: Phaser.Cameras.Scene2D.Camera;
 
   private gameEnded: boolean;
-  private lastLocation: { x: number; y: number };
   private playerPath!: any[];
 
   private map!: Phaser.Tilemaps.Tilemap;
@@ -20,7 +19,6 @@ export default class Game extends Phaser.Scene {
 
   constructor() {
     super("game");
-    this.lastLocation = { x: 0, y: 0 };
     this.playerPath = [];
     this.gameEnded = false;
     this.playerZk = new zkData();
@@ -88,9 +86,6 @@ export default class Game extends Phaser.Scene {
   }
 
   create() {
-
-   
-
     this.scene.run("game-ui");
     const map = this.make.tilemap({ key: "map" });
 
@@ -139,15 +134,6 @@ export default class Game extends Phaser.Scene {
 
     this.minimap.startFollow(this.hero, true);
 
-    //Add treasure chests
-    /*
-    const chest = this.matter.add.image(2000, 3000, "chest", undefined, {
-      restitution: 1,
-      label: "chest",
-    });
-    chest.setFixedRotation();
-    chest.setStatic(true);
-    */
     this.createChests();
 
     this.matter.world.on("collisionstart", this.handleCollision, this);
