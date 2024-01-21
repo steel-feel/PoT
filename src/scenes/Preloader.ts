@@ -21,6 +21,9 @@ export default class Preloader extends Phaser.Scene {
             'misc/fx_mixdown.ogg',
         ]);
 
+        //loading prompt
+        this.load.atlas('loading-ui', 'misc/nine-slice.png', 'misc/nine-slice.json');
+
     }
     create() {
         this.scene.start('splash')

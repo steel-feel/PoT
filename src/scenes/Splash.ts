@@ -6,14 +6,38 @@ export default class Preloader extends Phaser.Scene {
         super('splash')
     }
 
-   async create() {
 
-        await Game.compile(); 
 
-        //TODO: button beautification
+    async create() {
+
+        const loadingX = this.cameras.main.centerX,
+        loadingY = this.cameras.main.centerY - 30;
+
+        const bar1 = this.add.nineslice(loadingX, loadingY, 'loading-ui', 'ButtonOrange');
+        const fill1 = this.add.nineslice(loadingX - 114, loadingY - 2, 'loading-ui', 'ButtonOrangeFill1', 13, 39, 6, 6);
+
+        fill1.setOrigin(0, 0.5);
+
+        const loadingTween = this.tweens.add({
+            targets: fill1,
+            width: 228,
+            duration: 10000,
+            ease: 'sine.inout',
+            yoyo: false,
+        });
+
+        await new Promise(r => setTimeout(r, 8000));
+
+        await Game.compile()
+
+        loadingTween.destroy();
+        fill1.destroy();
+        bar1.destroy();
+
         const startButton = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Start game')
             .setOrigin(0.5)
             .setPadding(10)
+            .setFontSize(32)
             .setStyle({ backgroundColor: '#111' })
             .setInteractive({ useHandCursor: true })
             .on('pointerdown', this.handleConnection, this)
