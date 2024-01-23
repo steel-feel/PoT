@@ -1,10 +1,12 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "es2020",
     "useDefineForClassFields": true,
     "module": "ESNext",
-    "lib": ["ESNext", "DOM"],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "moduleResolution": "Node",
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
     "strict": true,
     "sourceMap": true,
     "resolveJsonModule": true,
@@ -17,5 +19,5 @@
     "skipLibCheck": true
   },
   "include": ["src"],
-  "exclude": ["src/zk/contracts"]
+  "exclude": ["src/zk/contracts","node_modules"]
 }

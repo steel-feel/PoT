@@ -1,17 +1,24 @@
 import Phaser from 'phaser'
-import { Game } from '../zk/contracts'
+import WebWorkerClient from '../zk/WebWorkerClient'
+
 
 export default class Preloader extends Phaser.Scene {
     constructor() {
         super('splash')
     }
 
-
+    async timeout(seconds: number): Promise<void> {
+        return new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, seconds * 1000);
+        });
+    }
 
     async create() {
 
         const loadingX = this.cameras.main.centerX,
-        loadingY = this.cameras.main.centerY - 30;
+            loadingY = this.cameras.main.centerY - 30;
 
         const bar1 = this.add.nineslice(loadingX, loadingY, 'loading-ui', 'ButtonOrange');
         const fill1 = this.add.nineslice(loadingX - 114, loadingY - 2, 'loading-ui', 'ButtonOrangeFill1', 13, 39, 6, 6);
@@ -26,10 +33,13 @@ export default class Preloader extends Phaser.Scene {
             yoyo: false,
         });
 
-        await new Promise(r => setTimeout(r, 8000));
+        const zkappWorkerClient = new WebWorkerClient();
+        await this.timeout(5)
 
-        await Game.compile()
+        await zkappWorkerClient.loadContract();
+        await zkappWorkerClient.compileContract();
 
+        //~~~~~~~~~~~~~~~ Destroy loading 
         loadingTween.destroy();
         fill1.destroy();
         bar1.destroy();
