@@ -3,6 +3,7 @@ import { sceneEvents } from "../events/EventCenter";
 import { Game } from '../zk/contracts'
 import { Tree, chectLocs } from "../zk/constants";
 import { Field, Mina, PublicKey, Reducer, fetchAccount } from "o1js";
+import type WebWorkerClient from '../zk/WebWorkerClient'
 
 
 export default class GameUI extends Phaser.Scene {
@@ -10,7 +11,7 @@ export default class GameUI extends Phaser.Scene {
   scoreText!: Phaser.GameObjects.Text;
   // saveButton!: Phaser.GameObjects.Text;
   displayAccount!: string;
-
+  zkappWorkerClient!: WebWorkerClient;
 
   constructor() {
     super({ key: "game-ui" });
@@ -22,6 +23,14 @@ export default class GameUI extends Phaser.Scene {
     const accounts = await window.mina.requestAccounts();
 
     this.displayAccount = `${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}`;
+
+    await this.zkappWorkerClient.setGamer(accounts[0])
+
+    //set network
+    await this.zkappWorkerClient.setActiveInstance()
+
+    //load contract public key
+    await this.zkappWorkerClient.initZkappInstance();
 
     this.add.text(20, 30, this.displayAccount, {
       fontStyle: "bold",
@@ -58,7 +67,7 @@ export default class GameUI extends Phaser.Scene {
     const events = await zkAppInstance.reducer.fetchActions({
       fromActionState: Reducer.initialActionState
     })
-    
+
     //@ts-ignore
     let user = events[0][0].user
 
@@ -66,7 +75,8 @@ export default class GameUI extends Phaser.Scene {
   }
 
   getZkApp() {
-    const zkAppAddress = PublicKey.fromBase58('B62qrq1kLNK2C9UkpJzLnER6T1XPYfZ8dye78MZwrUA1LqKPqr9azXG')
+    const contractPK = import.meta.env.VITE_CONRTACT_PK
+    const zkAppAddress = PublicKey.fromBase58(contractPK)
     // const zkAppAddress = PublicKey.fromBase58('B62qrm5WMHBFPVjuhxQ1J8VYgLs14t1Wru6Jxwvm8x7sNWB7drG2NVr')
     const zkAppInstance = new Game(zkAppAddress);
 
@@ -115,38 +125,22 @@ export default class GameUI extends Phaser.Scene {
 
   async sendMinaTxn(txnChests: any[]) {
 
-    // Mina.setActiveInstance(window.mina)
-
     try {
-      const { zkAppInstance, zkAppAddress } = this.getZkApp()
 
-      const Network = Mina.Network({
-        mina: 'http://localhost:8080/graphql',
-        archive: "http://localhost:8282/"    // Use https://proxy.berkeley.minaexplorer.com/graphql or https://api.minascan.io/node/berkeley/v1/graphql
-      })
+      console.log("create txn");
+      await this.zkappWorkerClient.foundTreasureTransanction(txnChests)
+      console.log("Prove txn");
+      await this.zkappWorkerClient.proveTransaction();
+
+      const tx = await this.zkappWorkerClient.getTransactionJSON()
+
       //@ts-ignore
-      Mina.setActiveInstance(Network)
-
-      //@ts-ignore
-      const accounts = await window.mina.requestAccounts();
-      const txSender = PublicKey.fromBase58(accounts[0])
-
-      await fetchAccount({ publicKey: zkAppAddress });
-
-      const tx = await Mina.transaction(txSender, () => {
-
-        for (const i of txnChests) {
-          let keyWitness = Tree.getWitness(Field.from(i.key))
-          zkAppInstance.foundTreasure(Field.from(i.x), Field.from(i.y), keyWitness)
-        }
-
-      });
-
-      await tx.prove();
+      const a = await fetchAccount({ publicKey: (await window.mina.getAccounts())[0] }, import.meta.env.VITE_GRAPHQL_URL)
+      console.log(`fetch account value ${JSON.stringify(a)}`);
 
       //@ts-ignore
       const { hash } = await window.mina.sendTransaction({
-        transaction: tx.toJSON(),
+        transaction: tx,
         feePayer: {
           fee: '',
           memo: 'game',

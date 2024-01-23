@@ -15,39 +15,41 @@ const state = {
 
 // ---------------------------------------------------------------------------------------
 
+// PRODUCTION URLS Berkeley
+// Archive https://archive.berkeley.minaexplorer.com/
+// graphql https://proxy.berkeley.minaexplorer.com/graphql
+
 const functions = {
-    setActiveInstanceToBerkeley: async (args: {}) => {
-        const Berkeley = Mina.Network(
-            'https://proxy.berkeley.minaexplorer.com/graphql'
-        );
-        console.log('Berkeley Instance Created');
-        Mina.setActiveInstance(Berkeley);
-    },
+    setActiveInstance: async (args: {}) => {
+        if (!import.meta.env.VITE_GRAPHQL_URL  || !import.meta.env.VITE_ARCHIVE_URL )
+        {
+            console.log("URl NOT FOUND");
+            throw new Error("Node API not set")
+        }
 
-    setActiveInstanceToLocal: async (args: {}) => {
-        const Local = Mina.Network({
-            mina: 'http://localhost:8080/graphql',
-            archive: "http://localhost:8282/"    // Use https://proxy.berkeley.minaexplorer.com/graphql or https://api.minascan.io/node/berkeley/v1/graphql
+        const Network = Mina.Network({
+            mina: import.meta.env.VITE_GRAPHQL_URL ,
+            archive: import.meta.env.VITE_ARCHIVE_URL
         });
-        console.log('Local Instance Created');
-        Mina.setActiveInstance(Local);
+        console.log('Network Instance Created');
+        Mina.setActiveInstance(Network);
     },
 
-    setGamer: async (args: { user: string }) => {
-        state.gamer = PublicKey.fromBase58(args.user);
+    setGamer: async (args: { gamerPk: string }) => {
+        await fetchAccount({ publicKey:args.gamerPk })
+        state.gamer = PublicKey.fromBase58(args.gamerPk);
+    },
+
+    getGamer :async (args:{}) => {
+        return state.gamer
     },
 
     loadContract: async (args: {}) => {
         const { Game } = await import('./contracts/game.js');
-        console.log("contract loaded");
-
         state.Game = Game;
     },
     compileContract: async (args: {}) => {
-        console.timeStamp("compiling . . . ");
-
         await state.Game!.compile();
-        console.timeStamp("compilation done");
     },
 
     //To be user with zk app Address
@@ -55,8 +57,11 @@ const functions = {
         const publicKey = PublicKey.fromBase58(args.publicKey58);
         return await fetchAccount({ publicKey });
     },
-    initZkappInstance: async (args: { publicKey58: string }) => {
-        const publicKey = PublicKey.fromBase58(args.publicKey58);
+
+    initZkappInstance: async (args: { }) => {
+        // const publicKey = PublicKey.fromBase58(args.publicKey58);
+        const publicKey = PublicKey.fromBase58(import.meta.env.VITE_CONRTACT_PK);
+        await fetchAccount({ publicKey })
         state.zkapp = new state.Game!(publicKey);
     },
 
@@ -65,7 +70,7 @@ const functions = {
     foundTreasureTransanction: async (args: { chests: any[] }) => {
         const { Tree } = await import('./contracts/constants.js');
         /// if issue occur { sender: state.gamer || PublicKey.empty() }, as 1st arg
-        const transaction = await Mina.transaction(() => {
+        const transaction = await Mina.transaction({ sender: state.gamer || PublicKey.empty() },() => {
             for (const i of args.chests) {
                 let keyWitness = Tree.getWitness(Field.from(i.key))
                 state.zkapp?.foundTreasure(Field.from(i.x), Field.from(i.y), keyWitness)

@@ -3,7 +3,7 @@
     "target": "es2020",
     "useDefineForClassFields": true,
     "module": "ESNext",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": ["dom", "dom.iterable", "esnext", "WebWorker"],
     "moduleResolution": "Node",
     "allowJs": true,
     "allowSyntheticDefaultImports": true,

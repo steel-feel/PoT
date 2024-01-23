@@ -9,12 +9,16 @@ import type {
 export default class WebWorkerClient {
   // ---------------------------------------------------------------------------------------
 
-  setActiveInstanceToBerkeley() {
-    return this._call('setActiveInstanceToBerkeley', {});
+  setActiveInstance() {
+    return this._call('setActiveInstance', {});
   }
 
  async loadContract() {
     return this._call('loadContract', {});
+  }
+
+  setGamer(gamerPk:string) {
+    return this._call('setGamer', {gamerPk});
   }
 
   compileContract() {
@@ -32,18 +36,20 @@ export default class WebWorkerClient {
     return result as ReturnType<typeof fetchAccount>;
   }
 
-  initZkappInstance(publicKey: PublicKey) {
-    return this._call('initZkappInstance', {
-      publicKey58: publicKey.toBase58(),
-    });
+  initZkappInstance() {
+    return this._call('initZkappInstance', { });
   }
 
-  createFoundTransctionTransaction() {
-    return this._call('foundTreasureTransanction', {});
+  foundTreasureTransanction(chests: any[]) {
+    return this._call('foundTreasureTransanction', {chests});
   }
 
-  proveUpdateTransaction() {
+  proveTransaction() {
     return this._call('proveTransaction', {});
+  }
+
+  getGamer(): Promise<any> {
+    return this._call('getGamer', {});
   }
 
   async getTransactionJSON() {
@@ -72,7 +78,6 @@ export default class WebWorkerClient {
       this.promises[event.data.id].resolve(event.data.data);
       delete this.promises[event.data.id];
     };
-
 
   }
 

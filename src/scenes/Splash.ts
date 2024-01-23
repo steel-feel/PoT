@@ -1,8 +1,7 @@
 import Phaser from 'phaser'
 import WebWorkerClient from '../zk/WebWorkerClient'
 
-
-export default class Preloader extends Phaser.Scene {
+export default class Splash extends Phaser.Scene {
     constructor() {
         super('splash')
     }
@@ -39,6 +38,10 @@ export default class Preloader extends Phaser.Scene {
         await zkappWorkerClient.loadContract();
         await zkappWorkerClient.compileContract();
 
+       const gameScene = this.scene.get('game-ui')
+       //@ts-ignore
+       gameScene.zkappWorkerClient = zkappWorkerClient
+        
         //~~~~~~~~~~~~~~~ Destroy loading 
         loadingTween.destroy();
         fill1.destroy();
