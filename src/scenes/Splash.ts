@@ -33,8 +33,31 @@ export default class Splash extends Phaser.Scene {
         });
 
         const zkappWorkerClient = new WebWorkerClient();
-        await this.timeout(5)
+       
+        const title = this.add.text(loadingX - 150, loadingY - 190 , 'zk Collector', { font: '64px Arial' });
+        title.setTint(0xff00ff, 0xffff00, 0x0000ff, 0xff0000);
 
+        this.add.text(loadingX - 370, this.cameras.main.centerY + 60 , 
+            `Welcome to the world of zk Collector 🔥, where adventure awaits you at every turn! 
+            You are Minar, a young hero who must save the land from the evil Ganon and his minions. 😈 
+            
+            Along the way, you will explore dungeons 🏰, solve puzzles 🧩, collect items 🎁, and fight enemies ⚔️. 
+            You will also meet many friends and allies who will help you on your quest. 👫
+            Are you ready to embark on this epic journey with divine Zero Knowlegde powered by Mina Protocol ? 🚀
+            Then grab your sword 🗡️ and shield 🛡️, and let's go! 🙌
+
+            How to play (Version 0.1):
+            1. Collect treasures by walking over them 💎
+            2. Commit treasure to blockchain using SAVE button 💾
+
+         Note: 📝
+         - This game requires Mina Enabled wallet like Auro Wallet 💳
+         - Game is live on Berkley network. Make sure you have enough balance for transactions 💰
+         - Each Box is unique. So, can only be collected once. 🚫
+
+            `
+        , { font: '20px Arial',wordWrap: { width: 700, useAdvancedWrap: true} });
+          await this.timeout(5)
         await zkappWorkerClient.loadContract();
         await zkappWorkerClient.compileContract();
 
