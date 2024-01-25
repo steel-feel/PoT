@@ -7,13 +7,11 @@ import { zkData } from "../zk/zkData";
 export default class Game extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private hero!: Phaser.Physics.Matter.Sprite;
-  private mainCamera!: Phaser.Cameras.Scene2D.Camera;
   private minimap!: Phaser.Cameras.Scene2D.Camera;
 
   private gameEnded: boolean;
   private playerPath!: any[];
 
-  private map!: Phaser.Tilemaps.Tilemap;
   private floorLayer!: Phaser.Tilemaps.TilemapLayer | null;
   private playerZk : zkData
 
@@ -89,8 +87,6 @@ export default class Game extends Phaser.Scene {
     this.scene.run("game-ui");
     const map = this.make.tilemap({ key: "map" });
 
-    this.map = map;
-
     const walls = map.addTilesetImage("walls", "walls");
     const floors = map.addTilesetImage("floors", "floors") ?? null;
 
@@ -118,7 +114,7 @@ export default class Game extends Phaser.Scene {
     this.hero.setFixedRotation();
     this.hero.setDepth(4);
 
-    this.mainCamera = this.cameras.main.startFollow(this.hero, true);
+    this.cameras.main.startFollow(this.hero, true);
     this.cameras.main.setZoom(0.7, 0.7);
 
     //Mini MAP
